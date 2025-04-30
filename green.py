@@ -1,6 +1,10 @@
 import jax
 import jax.numpy as jnp
 
+import matplotlib.pyplot as plt
+
+jax.config.update("jax_enable_x64", True)
+
 # Constants
 D0 = 1e28         # cm^2 / s
 delta = 0.6
@@ -45,28 +49,54 @@ def green_function(E, r, t):
     exp_term = jnp.exp(-r**2 / l2_val)
     energy_term = Es**(-gamma)*(1 - b0 * E * t)**(-2)
     chi_val = chi_function(l2_hat)
-    print(f"E_s = {Es}")
-    print(f"l2_val = {l2_val}")
-    
-   
-    
-    print(f"Prefactor = {prefactor}")
-    
-    
-   
-    print(f"Energy_term = {energy_term}")
-    
-    
-    print(f"Chi_val = {chi_val}")
+  
     return prefactor * exp_term * energy_term * chi_val
 
+def flux(E,r,t):
+    g = green_function(E, r, t)
+    return g*c*E**(3)/(4*jnp.pi)
+
 # Example of use
-E = 100.0  # GeV
-r = 100.0 * 3.086e18  # 100 parsecs in cm
-t = 1e5 * 3.154e7     # 100 000 ans in secondes
 
-flux = E**(3)*green_function(E, r, t)*c/(4*jnp.pi)
-print(f"Flux: {flux:.10e}")
+energies = jnp.logspace(1, 5, 100)  # 10 GeV to 100 000 GeV
 
+
+t = 1e5 * 3.154e7  # 100 000 years in seconds
+distances_pc = [10, 100, 1000]  # parsecs
+colors = ['blue', 'green', 'red']
+
+plt.figure(figsize=(8,6))
+
+for d_pc, color in zip(distances_pc, colors):
+    r_cm = d_pc * 3.086e18
+    G_vals = jnp.array([green_function(E, r_cm, t) for E in energies])
+    plt.plot(energies, G_vals, label=f"{d_pc} pc", color=color)
+
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel("Energy [GeV]")
+plt.ylabel("Green function G(E)")
+plt.title("G(E) at t = 100 Myr")
+plt.legend()
+plt.grid(True, which="both", ls="--")
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(8,6))
+
+for d_pc, color in zip(distances_pc, colors):
+    r_cm = d_pc * 3.086e18
+    flux_vals = jnp.array([flux(E, r_cm, t) for E in energies])
+    plt.plot(energies, flux_vals, label=f"{d_pc} pc", color=color)
+
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel("Energy [GeV]")
+plt.ylabel("E^3 J(E) [GeV cm-2 s-1]")
+plt.title("E^3 J(E) at t = 100 Myr")
+plt.legend()
+plt.grid(True, which="both", ls="--")
+plt.tight_layout()
+plt.show()
 
 
