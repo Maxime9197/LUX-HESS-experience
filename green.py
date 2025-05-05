@@ -169,8 +169,8 @@ r_cm = 100 * 3.086e18  # 100 pc en cm
 plt.figure(figsize=(8,6))
 
 
-G_val = jnp.array([green_function(E, r_cm, t) for E in energies])     # avec pertes d'énergie
-G_val2 = jnp.array([green_function_d(E, r_cm, t) for E in energies])  # sans pertes d'énergie
+G_val = jnp.array([green_function(E, r_cm, t) for E in energies])    
+G_val2 = jnp.array([green_function_d(E, r_cm, t) for E in energies])  
 
 
 plt.plot(energies, G_val, label="With loss of energy")
